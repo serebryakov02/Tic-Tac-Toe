@@ -2,6 +2,7 @@
 #include "ui_tictactoewidget.h"
 #include <QGridLayout>
 #include <QSignalMapper>
+#include <QDebug>
 
 TicTacToeWidget::TicTacToeWidget(QWidget *parent)
     : QWidget(parent)
@@ -12,6 +13,8 @@ TicTacToeWidget::TicTacToeWidget(QWidget *parent)
     player = Player::Player1;
 
     createBoard();
+
+    resize(218, 182);
 }
 
 TicTacToeWidget::~TicTacToeWidget()
@@ -28,6 +31,65 @@ void TicTacToeWidget::clearBoard()
     for (int i = 0; i < MetaData::ROWS * MetaData::COLUMNS; ++i) {
         board.at(i)->setText(MetaData::emptyStr);
     }
+}
+
+/**
+ * A method which determines the winner of the game.
+ * @brief TicTacToeWidget::determinePlayer
+ * @return
+ */
+Winner TicTacToeWidget::determinePlayer(const QString &symbol, int buttonIndex)
+{
+    // Step 1: get the row number and column number
+    // of the clicked button in the grid.
+    int rowNumber = buttonIndex / MetaData::COLUMNS;
+    int colNumber = buttonIndex % MetaData::COLUMNS;
+
+    int counter = 0;
+
+    // Horizontal check: forward check.
+    int newColumn = colNumber;
+    bool validateSecondCheck = true;
+    while (++newColumn < MetaData::COLUMNS) {
+        // Position of the next button in the board.
+        int newPosition = rowNumber * MetaData::COLUMNS + newColumn;
+
+        // Retrieve next button.
+        auto button = board.at(newPosition);
+        // Check if the next button does not have the desired symbol.
+        if (button->text() != symbol) {
+            validateSecondCheck = false;
+            break;
+        } else {
+            counter++;
+        }
+    }
+
+    // Horizontal check: backward check.
+    newColumn = colNumber;
+    while (validateSecondCheck && --newColumn >= 0) {
+        // Position of the next button in the board.
+        int newPosition = rowNumber * MetaData::COLUMNS + newColumn;
+        // Retrieve next button.
+        auto button = board.at(newPosition);
+        // Check if the next button does not have the desired symbol.
+        if (button->text() != symbol) {
+            break;
+        } else {
+            counter++;
+        }
+    }
+
+    // Did the player win horizontally?
+    if (++counter == MetaData::COLUMNS) {
+        if (symbol == MetaData::player1Symbol) {
+            return Winner::player1;
+        } else if (symbol == MetaData::player2Symbol) {
+            return Winner::player2;
+        }
+    }
+
+    return Winner::NoWinnerYet;
 }
 
 /**
@@ -68,15 +130,32 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
     QString symbol;
 
     if (player == Player::Player1) {
-        symbol = "X";
+        symbol = MetaData::player1Symbol;
         button->setStyleSheet("QPushButton { color: blue; background: lightyellow }");
         button->setText(symbol);
-        setPlayer(Player::Player2);
+        button->setDisabled(true);
+        //setPlayer(Player::Player2);
     } else {
-        symbol = "O";
+        symbol = MetaData::player2Symbol;
         button->setStyleSheet("QPushButton { color: red; background: lightgreen }");
         button->setText(symbol);
-        setPlayer(Player::Player1);
+        button->setDisabled(true);
+        //setPlayer(Player::Player1);
+    }
+
+    // Determine the winner.
+    auto winner = determinePlayer(symbol, buttonIndex);
+    if (winner == Winner::NoWinnerYet) {
+        if (player == Player::Player1) {
+            setPlayer(Player::Player2);
+        }
+        else if (player == Player::Player2) {
+            setPlayer(Player::Player1);
+        }
+    } else if (winner == Winner::player1) {
+        // Disabling the board.
+        this->setDisabled(true);
+        qDebug() << "Player 1 wins!";
     }
 }
 
@@ -97,8 +176,6 @@ void TicTacToeWidget::createBoard()
             button->setMinimumWidth(50);
 
             signalMapper->setMapping(button, board.size());
-
-            //connect(button, &QPushButton::clicked, signalMapper, &QSignalMapper::map);
 
             // Use a lambda function to connect the button's clicked signal to the QSignalMapper.
             connect(button, &QPushButton::clicked, [signalMapper, button]() {

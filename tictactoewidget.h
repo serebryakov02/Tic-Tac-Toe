@@ -13,10 +13,16 @@ struct MetaData {
     static constexpr int ROWS = 3;
     static constexpr int COLUMNS = 3;
     static constexpr const char* emptyStr = "";
+    static constexpr const char* player1Symbol = "X";
+    static constexpr const char* player2Symbol = "O";
 };
 
 enum Player {
     Player1, Player2
+};
+
+enum Winner {
+    player1, player2, Draw, NoWinnerYet
 };
 
 class TicTacToeWidget : public QWidget
@@ -41,5 +47,8 @@ private:
     void clearBoard();
 
     Player player;
+
+    Winner determinePlayer(const QString&, int);
 };
+
 #endif // TICTACTOEWIDGET_H
