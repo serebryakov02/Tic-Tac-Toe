@@ -291,7 +291,7 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
         }
     } else {
         this->setDisabled(true);
-        QTimer::singleShot(3000, this, &TicTacToeWidget::finishGame);
+        QTimer::singleShot(MetaData::freezeTime, this, &TicTacToeWidget::finishGame);
         connect(this, &TicTacToeWidget::finishGame, this, &TicTacToeWidget::handleEndOfTheGame);
     }
 }
@@ -364,7 +364,23 @@ void TicTacToeWidget::handleEndOfTheGame()
  */
 void TicTacToeWidget::restartGame()
 {
-    qDebug() << "Test Message";
+    // Set the first player to start playing.
+    player = Player::Player1;
+
+    // Empty the Tic-Tac-Toe board if neccesary.
+    auto layout = this->layout();
+    QLayoutItem *layoutItem;
+    while (layout != nullptr && (layoutItem = layout->takeAt(0)) != nullptr) {
+        delete layoutItem->widget();
+        delete layoutItem;
+    }
+    delete layout;
+    board.clear();
+
+    // Create a new board.
+    createBoard();
+
+    this->setEnabled(true);
 }
 
 /**

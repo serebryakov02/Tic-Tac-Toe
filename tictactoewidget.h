@@ -18,6 +18,7 @@ struct MetaData {
     static constexpr const char* player1Color = "blue";
     static constexpr const char* player2Color = "red";
     static constexpr const char* drawColor = "purple";
+    static constexpr int freezeTime = 2000; // 2 secs.
 };
 
 enum Player {
