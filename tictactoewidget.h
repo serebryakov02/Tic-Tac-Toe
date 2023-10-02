@@ -15,6 +15,9 @@ struct MetaData {
     static constexpr const char* emptyStr = "";
     static constexpr const char* player1Symbol = "X";
     static constexpr const char* player2Symbol = "O";
+    static constexpr const char* player1Color = "blue";
+    static constexpr const char* player2Color = "red";
+    static constexpr const char* drawColor = "purple";
 };
 
 enum Player {
@@ -36,8 +39,13 @@ public:
     Player getPlayer() const;
     void setPlayer(Player newPlayer);
 
+signals:
+    void finishGame();
+
 private slots:
     void handleClicksOnBoards(int);
+    void handleEndOfTheGame();
+    void restartGame();
 
 private:
     Ui::TicTacToeWidget *ui;
@@ -48,6 +56,7 @@ private:
 
     Player player;
 
+    Winner winner;
     Winner determinePlayer(const QString&, int);
 };
 

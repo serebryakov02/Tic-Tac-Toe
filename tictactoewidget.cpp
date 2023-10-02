@@ -3,6 +3,10 @@
 #include <QGridLayout>
 #include <QSignalMapper>
 #include <QDebug>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QPushButton>
 
 TicTacToeWidget::TicTacToeWidget(QWidget *parent)
     : QWidget(parent)
@@ -11,6 +15,7 @@ TicTacToeWidget::TicTacToeWidget(QWidget *parent)
     ui->setupUi(this);
 
     player = Player::Player1;
+    winner = Winner::NoWinnerYet;
 
     createBoard();
 
@@ -263,18 +268,20 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
 
     if (player == Player::Player1) {
         symbol = MetaData::player1Symbol;
-        button->setStyleSheet("QPushButton { color: blue; background: lightyellow }");
+        button->setStyleSheet(QString("QPushButton { color:") + MetaData::player1Color
+                              + "; background: lightyellow }");
         button->setText(symbol);
         button->setDisabled(true);
     } else {
         symbol = MetaData::player2Symbol;
-        button->setStyleSheet("QPushButton { color: red; background: lightgreen }");
+        button->setStyleSheet(QString("QPushButton { color: ") + MetaData::player2Color
+                              + "; background: lightgreen }");
         button->setText(symbol);
         button->setDisabled(true);
     }
 
     // Determine the winner.
-    auto winner = determinePlayer(symbol, buttonIndex);
+    winner = determinePlayer(symbol, buttonIndex);
     if (winner == Winner::NoWinnerYet) {
         if (player == Player::Player1) {
             setPlayer(Player::Player2);
@@ -282,17 +289,82 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
         else if (player == Player::Player2) {
             setPlayer(Player::Player1);
         }
-    } else if (winner == Winner::player1) {
-        // Disabling the board.
+    } else {
         this->setDisabled(true);
-        qDebug() << "Player 1 wins!";
-    } else if (winner == Winner::player2) {
-        this->setDisabled(true);
-        qDebug() << "Player 2 wins!";
-    } else if (winner == Winner::Draw) {
-        this->setDisabled(true);
-        qDebug() << "Draw!";
+        QTimer::singleShot(3000, this, &TicTacToeWidget::finishGame);
+        connect(this, &TicTacToeWidget::finishGame, this, &TicTacToeWidget::handleEndOfTheGame);
     }
+}
+
+/**
+ * @brief TicTacToeWidget::handleEndOfTheGame
+ * A slot to handle the end of the game.
+ */
+void TicTacToeWidget::handleEndOfTheGame()
+{
+    // Emptying of the Tic-tac-Tow window.
+    // Retrieve layout.
+    auto layout = this->layout();
+
+    // Placeholder layout item.
+    QLayoutItem *layoutItem;
+    // Retrieve the layout items, delete their widgets
+    // and then delete the layout items.
+    while (layout != nullptr && (layoutItem = layout->takeAt(0)) != nullptr) {
+        delete layoutItem->widget();
+        delete layoutItem;
+    }
+    // Delete the layout.
+    delete layout;
+
+    // Clear the board.
+    board.clear();
+
+    // Creation of the layout for the window to display the outcome of the game.
+    auto vLayout = new QVBoxLayout(this);
+    vLayout->setAlignment(Qt::AlignCenter);
+
+    auto restartLbl = new QLabel(this);
+    auto restartBtn = new QPushButton("Restart", this);
+    QString restartLblColor;
+    QString restartBtnColor;
+    if (winner == Winner::player1) {
+        restartLblColor = QString("QLabel { color: ") + MetaData::player1Color + ";}";
+        restartBtnColor = QString("QPushButton { color: ") + MetaData::player1Color + ";}";
+    } else if (winner == Winner::player2) {
+        restartLblColor = QString("QLabel { color: ") + MetaData::player2Color + ";}";
+        restartBtnColor = QString("QPushButton { color: ") + MetaData::player2Color + ";}";
+    } else if (winner == Winner::Draw) {
+        restartLblColor = QString("QLabel { color: ") + MetaData::drawColor + ";}";
+        restartBtnColor = QString("QPushButton { color: ") + MetaData::drawColor + ";}";
+    }
+
+    // Style the button.
+    restartBtn->setMinimumWidth(100);
+    restartBtn->setMinimumHeight(40);
+    restartBtn->setFont(QFont("Liberation Serif", 14, QFont::Bold));
+    restartBtn->setStyleSheet(restartBtnColor);
+    // Style the label.
+    restartLbl->setFont(QFont("Liberation Serif", 14, QFont::Bold));
+    restartLbl->setStyleSheet(restartLblColor);
+    restartLbl->setText("Temporary Text");
+
+    vLayout->addWidget(restartLbl);
+    vLayout->addWidget(restartBtn);
+
+    // Enable the Tic-Tac-Toe window.
+    this->setEnabled(true);
+
+    connect(restartBtn, &QPushButton::clicked, this, &TicTacToeWidget::restartGame);
+}
+
+/**
+ * @brief TicTacToeWidget::restartGame
+ * A method to manage restart the game.
+ */
+void TicTacToeWidget::restartGame()
+{
+    qDebug() << "Test Message";
 }
 
 /**
