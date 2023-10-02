@@ -89,6 +89,47 @@ Winner TicTacToeWidget::determinePlayer(const QString &symbol, int buttonIndex)
         }
     }
 
+    // Vertical check: upward and downward.
+    counter = 0;
+    validateSecondCheck = false;
+    int newRow = rowNumber;
+    // Upward check.
+    while (--newRow >= 0) {
+        // Get the position index of the next position
+        // in the upward direction.
+        int newPosition = newRow * MetaData::COLUMNS + colNumber;
+
+        auto button = board.at(newPosition);
+        if (button->text() != symbol) {
+            validateSecondCheck = false;
+            break;
+        } else {
+            counter++;
+        }
+    }
+
+    // Downward check.
+    newRow = rowNumber;
+    while (++newRow < MetaData::ROWS && validateSecondCheck) {
+        int newPosition = newRow * MetaData::COLUMNS + colNumber;
+
+        auto button = board.at(newPosition);
+        if (button->text() != symbol) {
+            break;
+        } else {
+            counter++;
+        }
+    }
+
+    // Did the player win vertically?
+    if (++counter == MetaData::ROWS) {
+        if (symbol == MetaData::player1Symbol) {
+            return Winner::player1;
+        } else if (symbol == MetaData::player2Symbol) {
+            return Winner::player2;
+        }
+    }
+
     return Winner::NoWinnerYet;
 }
 
@@ -152,10 +193,10 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
         else if (player == Player::Player2) {
             setPlayer(Player::Player1);
         }
-    } else if (winner == Winner::player1) {
+    } else if (winner == Winner::player2) {
         // Disabling the board.
         this->setDisabled(true);
-        qDebug() << "Player 1 wins!";
+        qDebug() << "Player 2 wins!";
     }
 }
 
