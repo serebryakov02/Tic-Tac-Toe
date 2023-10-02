@@ -11,6 +11,7 @@ QT_END_NAMESPACE
 
 struct MetaData {
     static constexpr int ROWSCOLUMNS = 3;
+    static constexpr int BOARDSIZE = ROWSCOLUMNS * ROWSCOLUMNS;
     static constexpr const char* emptyStr = "";
     static constexpr const char* player1Symbol = "X";
     static constexpr const char* player2Symbol = "O";

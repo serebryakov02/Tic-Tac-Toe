@@ -214,7 +214,14 @@ Winner TicTacToeWidget::determinePlayer(const QString &symbol, int buttonIndex)
         }
     }
 
-    return Winner::NoWinnerYet;
+    // Check for the draw
+    for (int i = 0; i < MetaData::BOARDSIZE; ++i) {
+        if (board.at(i)->text() == MetaData::emptyStr) {
+            return Winner::NoWinnerYet;
+        }
+    }
+
+    return Winner::Draw;
 }
 
 /**
@@ -275,10 +282,16 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
         else if (player == Player::Player2) {
             setPlayer(Player::Player1);
         }
-    } else if (winner == Winner::player2) {
+    } else if (winner == Winner::player1) {
         // Disabling the board.
         this->setDisabled(true);
+        qDebug() << "Player 1 wins!";
+    } else if (winner == Winner::player2) {
+        this->setDisabled(true);
         qDebug() << "Player 2 wins!";
+    } else if (winner == Winner::Draw) {
+        this->setDisabled(true);
+        qDebug() << "Draw!";
     }
 }
 
