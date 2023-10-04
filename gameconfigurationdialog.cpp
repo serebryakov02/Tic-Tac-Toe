@@ -85,6 +85,20 @@ int GameConfigurationDialog::getGameSide() const
     return ui->spinBox->value();
 }
 
+/**
+ * @brief GameConfigurationDialog::getMode
+ * @return
+ * Method for returning selected mode.
+ */
+Mode GameConfigurationDialog::getMode() const
+{
+    if (ui->radioTwoPlayerMode->isChecked()) {
+        return Mode::TwoPlayer;
+    } else if (ui->radioAIMode->isChecked()) {
+        return Mode::AI;
+    }
+}
+
 // Initialization of the static member.
 GameConfigurationDialog* GameConfigurationDialog::gameConfigurationDialog = nullptr;
 

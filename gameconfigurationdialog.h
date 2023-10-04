@@ -13,6 +13,10 @@ struct SideRange {
     static constexpr int maxRange = 10;
 };
 
+enum Mode {
+    TwoPlayer, AI
+};
+
 class GameConfigurationDialog : public QDialog
 {
     Q_OBJECT
@@ -31,6 +35,9 @@ public:
     // Setters and getters for the game side.
     void setGameSide(int side) const;
     int getGameSide() const;
+
+    // Method for returning selected mode.
+    Mode getMode() const;
 
     // Singleton function.
     static GameConfigurationDialog* getInstance();

@@ -10,8 +10,8 @@ namespace Ui { class TicTacToeWidget; }
 QT_END_NAMESPACE
 
 struct MetaData {
-    static constexpr int ROWSCOLUMNS = 3;
-    static constexpr int BOARDSIZE = ROWSCOLUMNS * ROWSCOLUMNS;
+    //    static constexpr int ROWSCOLUMNS = 3;
+    //    static constexpr int BOARDSIZE = ROWSCOLUMNS * ROWSCOLUMNS;
     static constexpr const char* emptyStr = "";
     static constexpr const char* player1Symbol = "X";
     static constexpr const char* player2Symbol = "O";
@@ -19,6 +19,9 @@ struct MetaData {
     static constexpr const char* player2Color = "red";
     static constexpr const char* drawColor = "purple";
     static constexpr int freezeTime = 2000; // 2 secs.
+    static constexpr int endOfGameWidth = 500;
+    static constexpr int widthFactor = 50;
+    static constexpr int boardSpacing = 1;
 };
 
 enum Player {
@@ -37,16 +40,25 @@ public:
     TicTacToeWidget(QWidget *parent = nullptr);
     ~TicTacToeWidget();
 
-    Player getPlayer() const;
+    Player getCurrentPlayer() const;
     void setPlayer(Player newPlayer);
+
+    void setGameSide(int);
+
+    Winner getGameOutcome() const;
+
+    void setGameOutcomeMsg(const QString &newGameOutcomeMsg);
 
 signals:
     void finishGame();
+    void changePlayer();
 
 private slots:
     void handleClicksOnBoards(int);
     void handleEndOfTheGame();
-    void restartGame();
+
+public slots:
+    void startOrRestartGame();
 
 private:
     Ui::TicTacToeWidget *ui;
@@ -59,6 +71,12 @@ private:
 
     Winner winner;
     Winner determinePlayer(const QString&, int);
+
+    // A variable to store the size of the Tic-Tac-Toe board game.
+    int gameSide;
+
+    // An attrubite to store the game outcome message.
+    QString gameOutcomeMsg;
 };
 
 #endif // TICTACTOEWIDGET_H
