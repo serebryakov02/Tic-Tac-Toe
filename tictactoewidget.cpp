@@ -475,13 +475,55 @@ void TicTacToeWidget::calculateAIMove()
     // Vertical check
 
     // A counter for counting the occurences of the moves of player1 vertically.
-    int verticalCount = 0;
+    int verticalCounter = 0;
 
     // A variable to skip the downward check in case the direction was already defended upwards.
     bool skipSecondCheck = false;
 
     // A variable to store the next possible move of the AI opponent.
-    std::unique_ptr<int> verticalMove = std::make_unique<int>(nullptr);
+    std::unique_ptr<int> verticalMove(nullptr);
+
+    // Upward vertical check.
+    while (--rowNumber >= 0) {
+        // Gather the index of the next slot in a vertical upward direction.
+        int verticalUpwardNeighbour = rowNumber * gameSide + colNumber;
+
+        // In case Mr AI had already played in a vertical upward direction, then..
+        if (aiOpponentMoves.contains(verticalUpwardNeighbour)) {
+            verticalCounter = 0;
+            verticalMove = nullptr;
+            skipSecondCheck = true;
+        }
+
+        // In case the human player has played in the upward direction, then..
+        else if (player1Moves.contains(verticalUpwardNeighbour)) {
+            ++verticalCounter;
+        }
+        // In case the vertical upward neighbour was still empty
+        // it can be recorded as as possible move.
+        else if (verticalMove == nullptr) {
+            verticalMove = std::make_unique<int>(verticalUpwardNeighbour);
+        }
+    }
+    // Downward vertical check.
+    // Reset the row number.
+    rowNumber = player1LastMove / gameSide;
+    while (skipSecondCheck && rowNumber < gameSide) {
+        int verticalDownwardNeighbour = rowNumber * gameSide + colNumber;
+        if (aiOpponentMoves.contains(verticalDownwardNeighbour)) {
+            verticalCounter = 0;
+            verticalMove = nullptr;
+        } else if (player1Moves.contains(verticalDownwardNeighbour)) {
+            ++verticalCounter;
+        } else if (verticalMove == nullptr) {
+            verticalMove = std::make_unique<int>(verticalDownwardNeighbour);
+        }
+    }
+
+    // test
+    if (verticalMove != nullptr) {
+        transmitAiMove(*verticalMove);
+    }
 }
 
 /**
