@@ -58,13 +58,14 @@ void MainWindow::startNewGame()
     // Reset the mode to the two-player mode in the Tic-Tac-Toe class.
     ui->tictactoe->setTwoPlayerMode();
 
+    if (gameConfigurationDialog->exec() == QDialog::Rejected) {
+        return;
+    }
+
     // Check for AI mode.
     if (gameConfigurationDialog->getPlayer2Name() == SpecialData::aiName) {
         ui->tictactoe->resetContainers();
-    }
-
-    if (gameConfigurationDialog->exec() == QDialog::Rejected) {
-        return;
+        emit startAiMode();
     }
 
     // Configuration of player names.

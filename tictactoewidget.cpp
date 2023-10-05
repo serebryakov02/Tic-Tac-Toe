@@ -7,6 +7,9 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <stdlib.h>
+#include <time.h>
+#include <memory>
 
 TicTacToeWidget::TicTacToeWidget(QWidget *parent)
     : QWidget(parent)
@@ -21,6 +24,12 @@ TicTacToeWidget::TicTacToeWidget(QWidget *parent)
     // Connection of the transmitted AI moves to the function which
     // handles moves on the Tic-Tac-Toe board.
     connect(this, &TicTacToeWidget::sendAiMoves, this, &TicTacToeWidget::handleClicksOnBoards);
+
+    // Connect the signal which signals AI mode to the slot which triggers
+    // ai move calculation.
+    connect(this, &TicTacToeWidget::triggerAI, this, &TicTacToeWidget::triggerAiMoveCalculation);
+
+    connect(this, &TicTacToeWidget::startAIMoveCalculation, this, &TicTacToeWidget::calculateAIMove);
 }
 
 TicTacToeWidget::~TicTacToeWidget()
@@ -247,7 +256,7 @@ void TicTacToeWidget::setGameOutcomeMsg(const QString &newGameOutcomeMsg)
 void TicTacToeWidget::resetContainers()
 {
     player1Moves.clear();
-    playerAIMoves.clear();
+    aiOpponentMoves.clear();
 }
 
 /**
@@ -268,6 +277,7 @@ Player TicTacToeWidget::getCurrentPlayer() const
 void TicTacToeWidget::setPlayer(Player newPlayer)
 {
     player = newPlayer;
+    if (mode == Mode::AIMode) emit triggerAI();
 }
 
 /**
@@ -307,6 +317,9 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
     QString symbol;
 
     if (player == Player::Player1) {
+        // Record the move of player1.
+        player1LastMove = buttonIndex;
+
         symbol = MetaData::player1Symbol;
         button->setStyleSheet(QString("QPushButton { color:") + MetaData::player1Color
                               + "; background: lightyellow }");
@@ -403,9 +416,81 @@ void TicTacToeWidget::handleEndOfTheGame()
     connect(restartBtn, &QPushButton::clicked, this, &TicTacToeWidget::startOrRestartGame);
 }
 
+/**
+ * @brief TicTacToeWidget::triggerAiMoveCalculation
+ * A method which triggers AI move calculation.
+ */
 void TicTacToeWidget::triggerAiMoveCalculation()
 {
+    if (player == Player::Player2) {
+        // Disable the game board.
+        this->setDisabled(true);
 
+        QTimer::singleShot(MetaData::aiDelayDuration, this,
+                           &TicTacToeWidget::startAIMoveCalculation);
+
+    } else if (player == Player::Player1) {
+        this->setEnabled(true);
+    }
+}
+
+/**
+ * A slot which computes AI move.
+ * @brief TicTacToeWidget::calculateAIMove
+ */
+void TicTacToeWidget::calculateAIMove()
+{
+    // Easy to beat AI model. Maybe implement an additional radio button
+    // for it later in the future?
+    /*
+    // Store the move of player1.
+    player1Moves.push_back(player1LastMove);
+
+    // Generate the random number based on the board size.
+    srand(time(NULL));
+
+    // A number between zero and the board size.
+    int randNumber = rand() % (gameSide * gameSide);
+    // The number must indicate a free spot on the board.
+    while (randNumber >= gameSide * gameSide || player1Moves.contains(randNumber)
+           || aiOpponentMoves.contains(randNumber)) {
+        randNumber = rand() % (gameSide * gameSide);
+    }
+
+    // Store AI opponent move.
+    aiOpponentMoves.push_back(randNumber);
+
+    // Transmit AI opponent move for handling.
+    transmitAiMove(randNumber);*/
+
+    // Hard to beat AI - Defense Mode.
+
+    // Gathering of the column number and row number of the last move of player 1.
+    int rowNumber = player1LastMove / gameSide;
+    int colNumber = player1LastMove % gameSide;
+
+    // Store the last move of the player1.
+    player1Moves.push_back(player1LastMove);
+
+    // Vertical check
+
+    // A counter for counting the occurences of the moves of player1 vertically.
+    int verticalCount = 0;
+
+    // A variable to skip the downward check in case the direction was already defended upwards.
+    bool skipSecondCheck = false;
+
+    // A variable to store the next possible move of the AI opponent.
+    std::unique_ptr<int> verticalMove = std::make_unique<int>(nullptr);
+}
+
+/**
+ * @brief TicTacToeWidget::transmitAiMove
+ * A method which transmits the move of AI opponent.
+ */
+void TicTacToeWidget::transmitAiMove(int move)
+{
+    emit sendAiMoves(move);
 }
 
 /**

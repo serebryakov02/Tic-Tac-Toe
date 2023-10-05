@@ -22,6 +22,7 @@ struct MetaData {
     static constexpr int endOfGameWidth = 500;
     static constexpr int widthFactor = 50;
     static constexpr int boardSpacing = 1;
+    static constexpr int aiDelayDuration = 1000; // 1 sec.
 };
 
 enum Player {
@@ -60,10 +61,20 @@ signals:
     void changePlayer();
     // A signal which sends AI moves.
     void sendAiMoves(int);
+    // A signal which signals AI mode.
+    void triggerAI();
+    // A signal to trigger the start of AI mode calculation.
+    void startAIMoveCalculation();
 
 private slots:
     void handleClicksOnBoards(int);
     void handleEndOfTheGame();
+    // A slot which trigers AI move calculations.
+    void triggerAiMoveCalculation();
+    // A slot which computes AI move.
+    void calculateAIMove();
+    // A method which transmits the AI opponent move.
+    void transmitAiMove(int);
 
 public slots:
     void startOrRestartGame();
@@ -95,8 +106,11 @@ private:
     // A containter to store player1 moves.
     QList<int> player1Moves;
 
+    // A variable to store the last move of player1.
+    int player1LastMove;
+
     // A containter to store the moves of the AI opponent.
-    QList<int> playerAIMoves;
+    QList<int> aiOpponentMoves;
 };
 
 #endif // TICTACTOEWIDGET_H
