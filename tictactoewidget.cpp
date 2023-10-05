@@ -16,6 +16,11 @@ TicTacToeWidget::TicTacToeWidget(QWidget *parent)
 
     player = Player::Player1;
     winner = Winner::NoWinnerYet;
+    mode = Mode::TwoPlayerMode;
+
+    // Connection of the transmitted AI moves to the function which
+    // handles moves on the Tic-Tac-Toe board.
+    connect(this, &TicTacToeWidget::sendAiMoves, this, &TicTacToeWidget::handleClicksOnBoards);
 }
 
 TicTacToeWidget::~TicTacToeWidget()
@@ -236,6 +241,16 @@ void TicTacToeWidget::setGameOutcomeMsg(const QString &newGameOutcomeMsg)
 }
 
 /**
+ * @brief TicTacToeWidget::resetContainers
+ * A method to reset containers.
+ */
+void TicTacToeWidget::resetContainers()
+{
+    player1Moves.clear();
+    playerAIMoves.clear();
+}
+
+/**
  * @brief TicTacToeWidget::getPlayer
  * @return
  * A method which returns player.
@@ -388,6 +403,11 @@ void TicTacToeWidget::handleEndOfTheGame()
     connect(restartBtn, &QPushButton::clicked, this, &TicTacToeWidget::startOrRestartGame);
 }
 
+void TicTacToeWidget::triggerAiMoveCalculation()
+{
+
+}
+
 /**
  * @brief TicTacToeWidget::restartGame
  * A method to manage restart the game.
@@ -401,6 +421,9 @@ void TicTacToeWidget::startOrRestartGame()
     player = Player::Player1;
 
     emit changePlayer();
+
+    // Reset the containers if it is the AI mode.
+    if (mode == Mode::AIMode) resetContainers();
 
     // Empty the Tic-Tac-Toe board if neccesary.
     auto layout = this->layout();
@@ -416,6 +439,23 @@ void TicTacToeWidget::startOrRestartGame()
     createBoard();
 
     this->setEnabled(true);
+}
+
+/**
+ * @brief TicTacToeWidget::startAiMode
+ * A slot to set the AI mode.
+ */
+void TicTacToeWidget::setAiMode()
+{
+    mode = Mode::AIMode;
+}
+
+/**
+ * @brief TicTacToeWidget::setTwoPlayerMode
+ */
+void TicTacToeWidget::setTwoPlayerMode()
+{
+    mode = Mode::TwoPlayerMode;
 }
 
 /**

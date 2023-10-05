@@ -23,6 +23,9 @@ public:
 
     void setGameOutcomeMsg(const QString &newGameOutcomeMsg);
 
+signals:
+    void startAiMode();
+
 private slots:
     void startNewGame();
     void boldCurrentPlayerName();

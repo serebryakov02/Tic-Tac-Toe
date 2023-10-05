@@ -32,6 +32,10 @@ enum Winner {
     player1, player2, Draw, NoWinnerYet
 };
 
+enum Mode {
+    TwoPlayerMode, AIMode
+};
+
 class TicTacToeWidget : public QWidget
 {
     Q_OBJECT
@@ -49,9 +53,13 @@ public:
 
     void setGameOutcomeMsg(const QString &newGameOutcomeMsg);
 
+    void resetContainers();
+
 signals:
     void finishGame();
     void changePlayer();
+    // A signal which sends AI moves.
+    void sendAiMoves(int);
 
 private slots:
     void handleClicksOnBoards(int);
@@ -59,6 +67,10 @@ private slots:
 
 public slots:
     void startOrRestartGame();
+    void setAiMode();
+
+    // A slot to reset the two-player mode.
+    void setTwoPlayerMode();
 
 private:
     Ui::TicTacToeWidget *ui;
@@ -77,6 +89,14 @@ private:
 
     // An attrubite to store the game outcome message.
     QString gameOutcomeMsg;
+
+    Mode mode;
+
+    // A containter to store player1 moves.
+    QList<int> player1Moves;
+
+    // A containter to store the moves of the AI opponent.
+    QList<int> playerAIMoves;
 };
 
 #endif // TICTACTOEWIDGET_H

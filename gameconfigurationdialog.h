@@ -13,8 +13,12 @@ struct SideRange {
     static constexpr int maxRange = 10;
 };
 
-enum Mode {
-    TwoPlayer, AI
+//enum Mode {
+//    TwoPlayer, AI
+//};
+
+struct SpecialData {
+    static constexpr const char* aiName = "Mister AI";
 };
 
 class GameConfigurationDialog : public QDialog
@@ -37,16 +41,23 @@ public:
     int getGameSide() const;
 
     // Method for returning selected mode.
-    Mode getMode() const;
+    //Mode getMode() const;
 
     // Singleton function.
     static GameConfigurationDialog* getInstance();
+
+    // A method to reset some configurations.
+    void resetSomeConfig();
 
 public slots:
     void updateOkBtn();
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
+
+    void on_radioAIMode_clicked();
+
+    void on_radioTwoPlayerMode_clicked();
 
 private:
     Ui::GameConfigurationDialog *ui;

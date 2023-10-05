@@ -90,14 +90,14 @@ int GameConfigurationDialog::getGameSide() const
  * @return
  * Method for returning selected mode.
  */
-Mode GameConfigurationDialog::getMode() const
-{
-    if (ui->radioTwoPlayerMode->isChecked()) {
-        return Mode::TwoPlayer;
-    } else if (ui->radioAIMode->isChecked()) {
-        return Mode::AI;
-    }
-}
+//Mode GameConfigurationDialog::getMode() const
+//{
+//    if (ui->radioTwoPlayerMode->isChecked()) {
+//        return Mode::TwoPlayer;
+//    } else if (ui->radioAIMode->isChecked()) {
+//        return Mode::AI;
+//    }
+//}
 
 // Initialization of the static member.
 GameConfigurationDialog* GameConfigurationDialog::gameConfigurationDialog = nullptr;
@@ -113,6 +113,17 @@ GameConfigurationDialog *GameConfigurationDialog::getInstance()
         gameConfigurationDialog = new GameConfigurationDialog;
     }
     return gameConfigurationDialog;
+}
+
+/**
+ * @brief GameConfigurationDialog::resetSomeConfig
+ * A method to reset some configurations.
+ */
+void GameConfigurationDialog::resetSomeConfig()
+{
+    ui->radioTwoPlayerMode->setChecked(true);
+    ui->txtPlayer2->setEnabled(true);
+    ui->txtPlayer2->setText("");
 }
 
 /**
@@ -140,5 +151,19 @@ void GameConfigurationDialog::on_buttonBox_clicked(QAbstractButton *button)
         } else if (ui->radioAIMode->isChecked()) {
             qDebug() << "AI Mode";
         }
+    }
+}
+
+void GameConfigurationDialog::on_radioAIMode_clicked()
+{
+    ui->txtPlayer2->setText(SpecialData::aiName);
+    ui->txtPlayer2->setDisabled(true);
+}
+
+void GameConfigurationDialog::on_radioTwoPlayerMode_clicked()
+{
+    if (ui->txtPlayer2->text() == SpecialData::aiName) {
+        ui->txtPlayer2->setText("");
+        ui->txtPlayer2->setDisabled(false);
     }
 }

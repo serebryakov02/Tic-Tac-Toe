@@ -26,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
     gameConfigurationDialog = GameConfigurationDialog::getInstance();
 
     connect(ui->tictactoe, &TicTacToeWidget::finishGame, this, &MainWindow::determineGameOutcomeMsg);
+
+    connect(this, &MainWindow::startAiMode, ui->tictactoe, &TicTacToeWidget::setAiMode);
 }
 
 MainWindow::~MainWindow()
@@ -50,6 +52,17 @@ void MainWindow::startNewGame()
     gameConfigurationDialog->setPlayer1Name("");
     gameConfigurationDialog->setPlayer2Name("");
 
+    // Reset some game configuration.
+    gameConfigurationDialog->resetSomeConfig();
+
+    // Reset the mode to the two-player mode in the Tic-Tac-Toe class.
+    ui->tictactoe->setTwoPlayerMode();
+
+    // Check for AI mode.
+    if (gameConfigurationDialog->getPlayer2Name() == SpecialData::aiName) {
+        ui->tictactoe->resetContainers();
+    }
+
     if (gameConfigurationDialog->exec() == QDialog::Rejected) {
         return;
     }
@@ -59,7 +72,7 @@ void MainWindow::startNewGame()
     ui->lblPlayer2->setText(gameConfigurationDialog->getPlayer2Name());
 
     int gameSide = gameConfigurationDialog->getGameSide();
-    auto mode = gameConfigurationDialog->getMode();
+    //auto mode = gameConfigurationDialog->getMode();
 
     // Adjustment of the Tic-Tac-Toe board size.
     ui->tictactoe->setFixedHeight(Data::widthFactor * (gameSide + Data::boardSpacing));
