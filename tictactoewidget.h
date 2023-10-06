@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QList>
 #include <QPushButton>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class TicTacToeWidget; }
@@ -111,6 +113,10 @@ private:
 
     // A containter to store the moves of the AI opponent.
     QList<int> aiOpponentMoves;
+
+    // Attributes for sounds.
+    QMediaPlayer *mediaPlayer;
+    QAudioOutput *audioOutput;
 };
 
 #endif // TICTACTOEWIDGET_H

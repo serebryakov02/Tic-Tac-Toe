@@ -2,5 +2,10 @@
     <qresource prefix="/">
         <file>images/new.png</file>
         <file>images/quit.png</file>
+        <file>sound/drawGame.wav</file>
+        <file>sound/player1Move.mp3</file>
+        <file>sound/player1Wins.wav</file>
+        <file>sound/player2Move.wav</file>
+        <file>sound/player2Wins.wav</file>
     </qresource>
 </RCC>

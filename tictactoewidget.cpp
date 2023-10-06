@@ -30,6 +30,12 @@ TicTacToeWidget::TicTacToeWidget(QWidget *parent)
     connect(this, &TicTacToeWidget::triggerAI, this, &TicTacToeWidget::triggerAiMoveCalculation);
 
     connect(this, &TicTacToeWidget::startAIMoveCalculation, this, &TicTacToeWidget::calculateAIMove);
+
+    // Audio settings.
+    mediaPlayer = new QMediaPlayer(this);
+    audioOutput = new QAudioOutput(this);
+    mediaPlayer->setAudioOutput(audioOutput);
+    audioOutput->setVolume(50);
 }
 
 TicTacToeWidget::~TicTacToeWidget()
@@ -147,85 +153,89 @@ Winner TicTacToeWidget::determinePlayer(const QString &symbol, int buttonIndex)
 
     // Backslash diagonal check.
     // Upward direction.
-    counter = 0;
-    validateSecondCheck = true;
+    if (buttonIndex % (gameSide + 1) == 0) {
+        counter = 0;
+        validateSecondCheck = true;
 
-    newRow = rowNumber;
-    newColumn = colNumber;
-    while(--newRow >= 0 && --newColumn >= 0) {
-        int newPosition = newRow * gameSide + newColumn;
+        newRow = rowNumber;
+        newColumn = colNumber;
+        while(--newRow >= 0 && --newColumn >= 0) {
+            int newPosition = newRow * gameSide + newColumn;
 
-        auto button = board.at(newPosition);
-        if (button->text() != symbol) {
-            validateSecondCheck = false;
-            break;
-        } else {
-            counter++;
+            auto button = board.at(newPosition);
+            if (button->text() != symbol) {
+                validateSecondCheck = false;
+                break;
+            } else {
+                counter++;
+            }
         }
-    }
 
-    // Downward direction.
-    newRow = rowNumber;
-    newColumn = colNumber;
-    while (++newRow < gameSide && ++newColumn < gameSide && validateSecondCheck) {
-        int newPosition = newRow * gameSide + newColumn;
+        // Downward direction.
+        newRow = rowNumber;
+        newColumn = colNumber;
+        while (++newRow < gameSide && ++newColumn < gameSide && validateSecondCheck) {
+            int newPosition = newRow * gameSide + newColumn;
 
-        auto button = board.at(newPosition);
-        if (button->text() != symbol) {
-            break;
-        } else {
-            counter++;
+            auto button = board.at(newPosition);
+            if (button->text() != symbol) {
+                break;
+            } else {
+                counter++;
+            }
         }
-    }
 
-    // Did the player win diagonally? (backslash)
-    if (++counter == gameSide) {
-        if (symbol == MetaData::player1Symbol) {
-            return Winner::player1;
-        } else if (symbol == MetaData::player2Symbol) {
-            return Winner::player2;
+        // Did the player win diagonally? (backslash)
+        if (++counter == gameSide) {
+            if (symbol == MetaData::player1Symbol) {
+                return Winner::player1;
+            } else if (symbol == MetaData::player2Symbol) {
+                return Winner::player2;
+            }
         }
     }
 
     // Forward slash diagonal check.
     // Upward direction.
-    counter = 0;
-    validateSecondCheck = true;
+    if (buttonIndex % (gameSide - 1) == 0) {
+        counter = 0;
+        validateSecondCheck = true;
 
-    newRow = rowNumber;
-    newColumn = colNumber;
-    while (--newRow >= 0 && ++newColumn < gameSide) {
-        int newPosition = newRow * gameSide + newColumn;
+        newRow = rowNumber;
+        newColumn = colNumber;
+        while (--newRow >= 0 && ++newColumn < gameSide) {
+            int newPosition = newRow * gameSide + newColumn;
 
-        auto button = board.at(newPosition);
-        if (button->text() != symbol) {
-            validateSecondCheck = false;
-            break;
-        } else {
-            counter++;
+            auto button = board.at(newPosition);
+            if (button->text() != symbol) {
+                validateSecondCheck = false;
+                break;
+            } else {
+                counter++;
+            }
         }
-    }
 
-    // Downward direction.
-    newRow = rowNumber;
-    newColumn = colNumber;
-    while (++newRow < gameSide && --newColumn >= 0 && validateSecondCheck) {
-        int newPosition = newRow * gameSide + newColumn;
+        // Downward direction.
+        newRow = rowNumber;
+        newColumn = colNumber;
+        while (++newRow < gameSide && --newColumn >= 0 && validateSecondCheck) {
+            int newPosition = newRow * gameSide + newColumn;
 
-        auto button = board.at(newPosition);
-        if (button->text() != symbol) {
-            break;
-        } else {
-            counter++;
+            auto button = board.at(newPosition);
+            if (button->text() != symbol) {
+                break;
+            } else {
+                counter++;
+            }
         }
-    }
 
-    // Did the player win diagonally? (forward slash)
-    if (++counter == gameSide) {
-        if (symbol == MetaData::player1Symbol) {
-            return Winner::player1;
-        } else if (symbol == MetaData::player2Symbol) {
-            return Winner::player2;
+        // Did the player win diagonally? (forward slash)
+        if (++counter == gameSide) {
+            if (symbol == MetaData::player1Symbol) {
+                return Winner::player1;
+            } else if (symbol == MetaData::player2Symbol) {
+                return Winner::player2;
+            }
         }
     }
 
@@ -317,6 +327,10 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
     QString symbol;
 
     if (player == Player::Player1) {
+        // Play the sound for player1 move.
+        mediaPlayer->setSource(QUrl("qrc:/sound/player1Move.mp3"));
+        mediaPlayer->play();
+
         // Record the move of player1.
         player1LastMove = buttonIndex;
 
@@ -325,7 +339,12 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
                               + "; background: lightyellow }");
         button->setText(symbol);
         button->setDisabled(true);
-    } else {
+    } else if (player == Player::Player2) {
+        // Play the sound for player2 move.
+        mediaPlayer->setSource(QUrl("qrc:/sound/player2Move.wav"));
+        mediaPlayer->play();
+
+        // Set the move for player 2.
         symbol = MetaData::player2Symbol;
         button->setStyleSheet(QString("QPushButton { color: ") + MetaData::player2Color
                               + "; background: lightgreen }");
@@ -345,6 +364,17 @@ void TicTacToeWidget::handleClicksOnBoards(int buttonIndex)
             emit changePlayer();
         }
     } else {
+        if (winner == Winner::player1) {
+            mediaPlayer->setSource(QUrl("qrc:/sound/player1Wins.wav"));
+            mediaPlayer->play();
+        } else if (winner == Winner::player2) {
+            mediaPlayer->setSource(QUrl("qrc:/sound/player2Wins.wav"));
+            mediaPlayer->play();
+        } else if (winner == Winner::Draw) {
+            mediaPlayer->setSource(QUrl("qrc:/sound/drawGame.wav"));
+            mediaPlayer->play();
+        }
+
         this->setDisabled(true);
         QTimer::singleShot(MetaData::freezeTime, this, &TicTacToeWidget::finishGame);
         connect(this, &TicTacToeWidget::finishGame, this, &TicTacToeWidget::handleEndOfTheGame);
