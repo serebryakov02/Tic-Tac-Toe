@@ -508,7 +508,7 @@ void TicTacToeWidget::calculateAIMove()
     // Downward vertical check.
     // Reset the row number.
     rowNumber = player1LastMove / gameSide;
-    while (skipSecondCheck && rowNumber < gameSide) {
+    while (!skipSecondCheck && ++rowNumber < gameSide) {
         int verticalDownwardNeighbour = rowNumber * gameSide + colNumber;
         if (aiOpponentMoves.contains(verticalDownwardNeighbour)) {
             verticalCounter = 0;
@@ -520,9 +520,187 @@ void TicTacToeWidget::calculateAIMove()
         }
     }
 
-    // test
-    if (verticalMove != nullptr) {
+    // Horizontal check: forward direction.
+    int horizontalCounter = 0;
+    std::unique_ptr<int> horizontalMove(nullptr);
+
+    // Reset the row number.
+    rowNumber = player1LastMove / gameSide;
+    skipSecondCheck = false;
+
+    while (++colNumber < gameSide) {
+        // Gather the index of the next slot in the horizontal forward direction
+        int horizontalForwardNeighbour = rowNumber * gameSide + colNumber;
+
+        // Was the horizontal forward neighbour a move of Mr. AI?
+        if (aiOpponentMoves.contains(horizontalForwardNeighbour)) {
+            horizontalCounter = 0;
+            horizontalMove = nullptr;
+            skipSecondCheck = true;
+        } else if (player1Moves.contains(horizontalForwardNeighbour)) {
+            ++horizontalCounter;
+        } else if (horizontalMove == nullptr) {
+            horizontalMove = std::make_unique<int>(horizontalForwardNeighbour);
+        }
+    }
+
+    // Horizontal check: backward direction.
+
+    // Reset column number.
+    colNumber = player1LastMove % gameSide;
+    while (!skipSecondCheck && --colNumber >= 0) {
+        int horizontalBackwardNeighbour = rowNumber * gameSide + colNumber;
+
+        if (aiOpponentMoves.contains(horizontalBackwardNeighbour)) {
+            horizontalCounter = 0;
+            horizontalMove = nullptr;
+        } else if (player1Moves.contains(horizontalBackwardNeighbour)) {
+            ++horizontalCounter;
+        } else if (horizontalMove == nullptr) {
+            horizontalMove = std::make_unique<int>(horizontalBackwardNeighbour);
+        }
+    }
+
+    // Forward slash diagonal.
+
+    // Variable creation for later use.
+    int forwardSlashCounter = 0;
+    std::unique_ptr<int> forwardSlashMove(nullptr);
+    skipSecondCheck = false;
+
+    if (player1LastMove % (gameSide - 1) == 0) {
+        // Upward check.
+        rowNumber = player1LastMove / gameSide;
+        colNumber = player1LastMove % gameSide;
+
+        while(--rowNumber >= 0 && ++colNumber < gameSide) {
+            // Get the index of the next position in the upward direction.
+            int forwardSlashUpwardNeighbour = rowNumber * gameSide + colNumber;
+
+            if (aiOpponentMoves.contains(forwardSlashUpwardNeighbour)) {
+                forwardSlashCounter = 0;
+                forwardSlashMove = nullptr;
+                skipSecondCheck = true;
+            } else if (player1Moves.contains(forwardSlashUpwardNeighbour)) {
+                // Count the moves of the human (player1) across the forward slash diagonal.
+                forwardSlashCounter++;
+            } else if (forwardSlashMove == nullptr) {
+                // The move the AI player will take if it does choose
+                // to defend the forward slash diagonal.
+                forwardSlashMove = std::make_unique<int>(forwardSlashUpwardNeighbour);
+            }
+        }
+
+        // Downward direction.
+
+        // Reset the column number and row number.
+        rowNumber = player1LastMove / gameSide;
+        colNumber = player1LastMove % gameSide;
+
+        while (!skipSecondCheck && ++rowNumber < gameSide && --colNumber >= 0) {
+            int forwardSlashDownwardNeighbour = rowNumber * gameSide + colNumber;
+
+            if (aiOpponentMoves.contains(forwardSlashDownwardNeighbour)) {
+                forwardSlashCounter = 0;
+                forwardSlashMove = nullptr;
+            } else if (player1Moves.contains(forwardSlashDownwardNeighbour)) {
+                forwardSlashCounter++;
+            } else if (forwardSlashMove == nullptr) {
+                forwardSlashMove = std::make_unique<int>(forwardSlashDownwardNeighbour);
+            }
+        }
+    }
+
+    // Backslash diagonal.
+
+    // Variable creation for later use.
+    std::unique_ptr<int> backwardSlashMove(nullptr);
+    int backwardSlashCounter = 0;
+    skipSecondCheck = false;
+
+    if (player1LastMove % (gameSide + 1) == 0) {
+        // Upward check.
+        rowNumber = player1LastMove / gameSide;
+        colNumber = player1LastMove % gameSide;
+
+        while(--rowNumber >= 0 && --colNumber >= 0) {
+            // Get the index of the next position in the upward direction.
+            int backwardSlashUpwardNeighbour = rowNumber * gameSide + colNumber;
+
+            if (aiOpponentMoves.contains(backwardSlashUpwardNeighbour)) {
+                backwardSlashCounter = 0;
+                backwardSlashMove = nullptr;
+                skipSecondCheck = true;
+            } else if (player1Moves.contains(backwardSlashUpwardNeighbour)) {
+                // Count the moves of the human (player1) across the forward slash diagonal.
+                backwardSlashCounter++;
+            } else if (backwardSlashMove == nullptr) {
+                // The move the AI player will take if it does choose
+                // to defend the forward slash diagonal.
+                backwardSlashMove = std::make_unique<int>(backwardSlashUpwardNeighbour);
+            }
+        }
+
+        // Downward check.
+        // Reset the column number and row number.
+        rowNumber = player1LastMove / gameSide;
+        colNumber = player1LastMove % gameSide;
+
+        while (!skipSecondCheck && ++rowNumber < gameSide && ++colNumber < gameSide) {
+            int backwardSlashDownwardNeighbour = rowNumber * gameSide + colNumber;
+
+            if (aiOpponentMoves.contains(backwardSlashDownwardNeighbour)) {
+                backwardSlashCounter = 0;
+                backwardSlashMove = nullptr;
+            } else if (player1Moves.contains(backwardSlashDownwardNeighbour)) {
+                backwardSlashCounter++;
+            } else if (backwardSlashMove == nullptr) {
+                backwardSlashMove = std::make_unique<int>(backwardSlashDownwardNeighbour);
+            }
+        }
+    }
+
+    // Should the vertical direction be defended?
+    if (verticalMove != nullptr && verticalCounter >= horizontalCounter &&
+        verticalCounter >= forwardSlashCounter &&
+        verticalCounter >= backwardSlashCounter) {
         transmitAiMove(*verticalMove);
+        aiOpponentMoves.push_back(*verticalMove);
+        return;
+    }
+    // Should the horizontal direction be defended?
+    else if (horizontalMove != nullptr && horizontalCounter >= verticalCounter &&
+             horizontalCounter >= forwardSlashCounter &&
+             horizontalCounter >= backwardSlashCounter) {
+        transmitAiMove(*horizontalMove);
+        aiOpponentMoves.push_back(*horizontalMove);
+        return;
+    }
+    // Should the forward slash diagonal be defended?
+    else if (forwardSlashMove != nullptr && forwardSlashCounter >= verticalCounter &&
+             forwardSlashCounter >= horizontalCounter &&
+             forwardSlashCounter >= backwardSlashCounter) {
+        transmitAiMove(*forwardSlashMove);
+        aiOpponentMoves.push_back(*forwardSlashMove);
+        return;
+    }
+    // Should the backward slash diagonal be defended?
+    else if (backwardSlashMove != nullptr && backwardSlashCounter >= verticalCounter &&
+             backwardSlashCounter >= horizontalCounter &&
+             backwardSlashCounter >= forwardSlashCounter) {
+        transmitAiMove(*backwardSlashMove);
+        aiOpponentMoves.push_back(*backwardSlashMove);
+        return;
+    }
+
+    // Select any available empty position as the AI move if no direction
+    // could be selected for defence.
+    for (int move = 0; move < gameSide * gameSide; ++move) {
+        if (!player1Moves.contains(move) && !aiOpponentMoves.contains(move)) {
+            transmitAiMove(move);
+            aiOpponentMoves.push_back(move);
+            break;
+        }
     }
 }
 
